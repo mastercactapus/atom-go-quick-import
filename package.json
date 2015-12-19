@@ -1,0 +1,16 @@
+{
+  "name": "go-quick-import",
+  "main": "./lib/go-quick-import",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "keywords": [],
+  "repository": "https://github.com/atom/go-quick-import",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+    "atom-space-pen-views": "^2.1.0",
+    "lodash": "^3.10.1"
+  }
+}
