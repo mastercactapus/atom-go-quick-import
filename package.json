@@ -2,8 +2,14 @@
   "name": "go-quick-import",
   "main": "./lib/go-quick-import",
   "version": "0.0.0",
-  "description": "A short description of your package",
-  "keywords": [],
+  "description": "Quickly add and remove imports without losing your place when editing.",
+  "keywords": [
+    "go",
+    "import"
+  ],
+  "scripts": {
+    "prepublish": "babel src -d lib -s && cd modimport && gopherjs build"
+  },
   "repository": "https://github.com/atom/go-quick-import",
   "license": "MIT",
   "engines": {
@@ -12,5 +18,12 @@
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
     "lodash": "^3.10.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.3.17",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-transform-flow-comments": "^6.3.23",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-1": "^6.3.13"
   }
 }

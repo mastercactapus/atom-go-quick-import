@@ -2,5 +2,5 @@
 npm-debug.log
 node_modules
 *.map
-lib/modimport/*.js
-
+lib/
+modimport/modimport.js
