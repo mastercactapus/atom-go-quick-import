@@ -33,6 +33,7 @@ func main() {
 	exports.Set("ListImports", ListImports)
 	exports.Set("RemoveImport", RemoveImport)
 	exports.Set("ProcessImports", ProcessImports)
+	exports.Set("Header", header)
 }
 
 func header(source string) (string, string) {

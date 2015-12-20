@@ -1,8 +1,19 @@
 /*@flow*/
 import { SelectListView } from "atom-space-pen-views";
 import PackageLister from "./package-lister";
-import { AddImport, RemoveImport, ListImports } from "../modimport/modimport";
+import { AddImport, RemoveImport, ListImports, Header } from "../modimport/modimport";
 import { partition, indexBy } from "lodash";
+
+function pathAliases(): Object {
+  var vals: Array<string> = atom.config.get("go-quick-import.importNames")
+  var paths = {};
+  vals.forEach(val=>{
+    var parts = val.split(" ");
+    if (parts.length !== 2) return;
+    paths[parts[1]] = parts[0];
+  });
+  return paths;
+}
 
 export default class GoQuickImportView extends SelectListView {
   constructor() {
@@ -11,6 +22,7 @@ export default class GoQuickImportView extends SelectListView {
     this.modalPanel = atom.workspace.addModalPanel({item:this, visible: false});
     this.visible = false;
     this.packageLister = new PackageLister();
+    this.setMaxItems(100);
     this.refresh();
   }
   destroy() {
@@ -60,20 +72,16 @@ export default class GoQuickImportView extends SelectListView {
   confirmed(item: Object) {
     var editor = atom.workspace.getActiveTextEditor();
     var oldText: string = editor.getText();
-    var newText: string;
+    var oldHeader: string = Header(editor.getText())[0];
+    var newHeader: string;
     if (item.Remove) {
-      newText = RemoveImport(oldText, item.Path);
+      newHeader = RemoveImport(oldHeader, item.Path);
     } else {
-      newText = AddImport(oldText, item.Path, "");
+      newHeader = AddImport(oldHeader, item.Path, pathAliases()[item.Path] || "");
     }
-    var pos = editor.getCursorBufferPosition();
-    var lineChange = newText.split("\n").length - oldText.split("\n").length;
-    pos.row += lineChange;
+    var oldLines = oldHeader.split("\n").length;
+    editor.setTextInBufferRange([[0,0], [oldLines-2, 0]], newHeader);
     var editorEl = atom.views.getView(editor);
-    var line = editorEl.getFirstVisibleScreenRow() + editor.displayBuffer.getVerticalScrollMargin()+lineChange;
-    editor.setText(newText);
-    editor.setCursorBufferPosition(pos);
-    editor.scrollToBufferPosition(pos);
     this.hide();
     editorEl.focus();
   }
