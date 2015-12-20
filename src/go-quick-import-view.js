@@ -1,7 +1,7 @@
 /*@flow*/
 import { SelectListView } from "atom-space-pen-views";
 import PackageLister from "./package-lister";
-import { AddImport, RemoveImport, ListImports, Header } from "../modimport/modimport";
+import { AddImport, RemoveImport, ListImports, Header } from "./modimport";
 import { partition, indexBy } from "lodash";
 
 function pathAliases(): Object {
