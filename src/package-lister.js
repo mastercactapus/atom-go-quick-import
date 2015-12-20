@@ -1,7 +1,5 @@
 /*@flow*/
 import { spawn } from "child_process";
-import { ProcessImports } from "../modimport/modimport";
-
 
 export default class PackageLister {
   constructor() {
@@ -16,13 +14,13 @@ export default class PackageLister {
     this.list = new Promise((resolve,reject)=>{
       this.kill();
       var buffer = "";
-      var proc = spawn("go", ["list", "-json", "-e", "..."], {stdio: ["ignore", "pipe", "ignore"]});
+      var proc = spawn("go", ["list", "-f", '{"Path":"{{.ImportPath}}","Name":"{{.Name}}"}', "-e", "..."], {stdio: ["ignore", "pipe", "ignore"]});
       this.proc = proc;
       proc.stdout.on("data", data=>buffer+=data);
       proc.on("close", code=>{
         this.proc = null;
         if (code !== 0) return reject(new Error("go list exited with non-zero exit code"));
-        resolve(ProcessImports(buffer));
+        resolve(buffer.trim().split("\n").map(str=>JSON.parse(str)));
       });
     });
     return this.list;
