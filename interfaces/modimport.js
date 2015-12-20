@@ -1,9 +1,8 @@
 
-declare class Import {
+type Import = {
   Name: string;
   Path: string;
 }
-
 declare module "./modimport" {
   declare function ProcessImports(data: string): Array<Import>;
   declare function AddImport(source: string, path: string, name: string): string;

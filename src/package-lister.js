@@ -16,9 +16,10 @@ export default class PackageLister {
     this.list = new Promise((resolve,reject)=>{
       this.kill();
       var buffer = "";
-      this.proc = spawn("go", ["list", "-json", "-e", "..."], {stdio: ["ignore", "pipe", "ignore"]});
-      this.proc.stdout.on("data", data=>buffer+=data);
-      this.proc.on("close", code=>{
+      var proc = spawn("go", ["list", "-json", "-e", "..."], {stdio: ["ignore", "pipe", "ignore"]});
+      this.proc = proc;
+      proc.stdout.on("data", data=>buffer+=data);
+      proc.on("close", code=>{
         this.proc = null;
         if (code !== 0) return reject(new Error("go list exited with non-zero exit code"));
         resolve(ProcessImports(buffer));

@@ -3,6 +3,6 @@
 [include]
 
 [libs]
-./modimport/flow.js
+interfaces/
 
 [options]
