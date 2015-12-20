@@ -80,7 +80,7 @@ export default class GoQuickImportView extends SelectListView {
       newHeader = AddImport(oldHeader, item.Path, pathAliases()[item.Path] || "");
     }
     var oldLines = oldHeader.split("\n").length;
-    editor.setTextInBufferRange([[0,0], [oldLines-2, 0]], newHeader);
+    editor.setTextInBufferRange([[0,0], [oldLines-1, 0]], newHeader);
     var editorEl = atom.views.getView(editor);
     this.hide();
     editorEl.focus();
