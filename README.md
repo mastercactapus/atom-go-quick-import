@@ -1,4 +1,4 @@
-# go-quick-import package
+# Go Quick Import
 
 Quickly add and remove imports without losing your place while editing.
 Behaves much the same as the `gosublime` package does.
