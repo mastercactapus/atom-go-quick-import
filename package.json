@@ -10,7 +10,7 @@
   "scripts": {
     "prepublish": "babel src -d lib -s && cd src && gopherjs build -o ../lib/modimport.js"
   },
-  "repository": "https://github.com/atom/go-quick-import",
+  "repository": "https://github.com/mastercactapus/atom-go-quick-import",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
