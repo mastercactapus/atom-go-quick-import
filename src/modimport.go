@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"github.com/gopherjs/gopherjs/js"
 	"go/ast"
 	"go/parser"
@@ -19,20 +18,11 @@ type Import struct {
 	Path string
 }
 
-// GoListImport is a json object from the `go list` command
-type GoListImport struct {
-	ImportPath string
-	Name       string
-	Stale      bool
-	Root       string
-}
-
 func main() {
 	exports := js.Module.Get("exports")
 	exports.Set("AddImport", AddImport)
 	exports.Set("ListImports", ListImports)
 	exports.Set("RemoveImport", RemoveImport)
-	exports.Set("ProcessImports", ProcessImports)
 	exports.Set("Header", header)
 }
 
@@ -133,25 +123,6 @@ func ListImports(source string) []Import {
 		if fi.Name != nil {
 			imports[i].Name = fi.Name.Name
 		}
-	}
-	return imports
-}
-
-// ProcessImports will decode the output of 'go list' for the package
-func ProcessImports(data string) []Import {
-	d := json.NewDecoder(bytes.NewBufferString(data))
-	imports := make([]Import, 0, 2000)
-	var imp GoListImport
-	var err error
-	for {
-		err = d.Decode(&imp)
-		if err != nil {
-			break
-		}
-		if imp.Name == "main" {
-			continue
-		}
-		imports = append(imports, Import{Name: imp.Name, Path: imp.ImportPath})
 	}
 	return imports
 }
