@@ -1,7 +1,7 @@
 {
   "name": "go-quick-import",
   "main": "./lib/go-quick-import",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Quickly add and remove imports without losing your place when editing.",
   "keywords": [
     "go",
