@@ -7,5 +7,5 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
-"atom-text-editor":
+"atom-text-editor[data-grammar='source go']":
   'ctrl-. ctrl-p': 'go-quick-import:trigger'
