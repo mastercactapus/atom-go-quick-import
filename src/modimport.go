@@ -12,7 +12,8 @@ import (
 	"strconv"
 )
 
-// Import is a go import
+// Import represents an imported package
+// Name is the alias (if any) and Path is the import path
 type Import struct {
 	Name string
 	Path string
