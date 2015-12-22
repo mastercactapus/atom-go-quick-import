@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
+    "babel-polyfill": "^6.3.14",
+    "glob": "^6.0.1",
     "lodash": "^3.10.1"
   },
   "devDependencies": {

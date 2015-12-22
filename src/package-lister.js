@@ -1,39 +1,51 @@
 /*@flow*/
-import { spawn } from "child_process";
+import "babel-polyfill";
+import { exec } from "child_process";
+import path from "path";
+import glob from "glob";
 
-export default class PackageLister {
-  constructor() {
-    this.proc = null;
-    this.list = null;
-  }
-  list: ?Promise;
-  proc: ?Object;
-
-  packages(): Promise<Array<Import>> {
-    if (this.list) return this.list;
-    this.list = new Promise((resolve,reject)=>{
-      this.kill();
-      var buffer = "";
-      var proc = spawn("go", ["list", "-f", '{"Path":"{{.ImportPath}}","Name":"{{.Name}}"}', "-e", "..."], {stdio: ["ignore", "pipe", "ignore"]});
-      this.proc = proc;
-      proc.stdout.on("data", data=>buffer+=data);
-      proc.on("close", code=>{
-        this.proc = null;
-        if (code !== 0) return reject(new Error("go list exited with non-zero exit code"));
-        resolve(buffer.trim().split("\n").map(str=>JSON.parse(str)));
-      });
+function run(command: string, options?: Object): Promise<string> {
+  return new Promise((resolve,reject)=>{
+    exec(command, options, (err,sout,serr)=>{
+      if (err) return reject(serr);
+      resolve(sout.toString());
     });
-    return this.list;
-  }
+  });
+}
 
-  refresh(): Promise<Array<Import>> {
-    this.list = null;
-    return this.packages();
-  }
+function parseEnv(data: string): {[key:string]: string} {
+  var parts = data.trim().split("\n");
+  var result = {};
+  parts.forEach(part=>{
+    var keys = part.split("=");
+    result[keys[0]] = JSON.parse(keys.slice(1).join("="));
+  });
+  return result;
+}
 
-  kill() {
-    if (!this.proc) return;
-    this.proc.kill();
-    this.proc = null;
+async function pkgDirs(): Promise<Array<string>> {
+  var env = parseEnv(await run("go env"));
+  return [
+    path.resolve(env.GOROOT, "pkg", env.GOOS + "_" + env.GOARCH),
+    path.resolve(env.GOPATH, "pkg", env.GOOS + "_" + env.GOARCH),
+  ]
+}
+
+export default async function listPkgs(): Promise<Array<string>> {
+  var pkgs = [];
+  var dirs = await pkgDirs();
+  var wait: Array<Promise<Array<string>>> = dirs.map(dir=>{
+    return new Promise((resolve,reject)=>{
+      glob(path.join(dir, "**/*.a"), (err, paths: Array<string>)=>{
+        if (err) return reject(err);
+        resolve(paths.map(p=>{
+          return path.relative(dir, p.replace(/\.a$/, ""));
+        }));
+      });
+    })
+  });
+  for (var i=0;i<wait.length;i++){
+    pkgs = pkgs.concat(await wait[i]);
   }
+  return pkgs;
 }

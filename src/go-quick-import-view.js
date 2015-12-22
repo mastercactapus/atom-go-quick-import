@@ -1,6 +1,7 @@
 /*@flow*/
+import "babel-polyfill";
 import { SelectListView } from "atom-space-pen-views";
-import PackageLister from "./package-lister";
+import listPackages from "./package-lister";
 import { AddImport, RemoveImport, ListImports, Header } from "./modimport";
 import { partition, indexBy } from "lodash";
 
@@ -21,37 +22,29 @@ export default class GoQuickImportView extends SelectListView {
     this.addClass("overlay from-top")
     this.modalPanel = atom.workspace.addModalPanel({item:this, visible: false});
     this.visible = false;
-    this.packageLister = new PackageLister();
     this.setMaxItems(100);
-    this.refresh();
   }
   destroy() {
     this.packageLister.kill();
     this.modalPanel.destroy();
     super.destroy();
   }
-  refresh() {
-    this.setLoading("Reading available packages...");
-    this.packages = [];
-    this.packageLister.refresh().then(pkgs=>{
-      this.setLoading("");
-      this.packages = pkgs;
-      this.updateItems();
-    });
-  }
-  updateItems() {
+
+  async updateItems(): Promise {
     if (!this.visible) return;
+    var doList = listPackages();
     var imports = ListImports(atom.workspace.getActiveTextEditor().getText());
     imports = indexBy(imports, "Path");
-    var parts = partition(this.packages, pkg=>imports[pkg.Path]);
-    var items = parts[0].map(pkg=>({Remove: true, Path: pkg.Path, Label: `delete: ${pkg.Name} ( ${pkg.Path} )`}));
-    items = items.concat(parts[1].map(pkg=>({Path: pkg.Path, Label: `${pkg.Name} ( ${pkg.Path} )`})));
+    var parts = partition(await doList, pkg=>imports[pkg]);
+    var items = parts[0].map(pkg=>({Remove: true, Path: pkg, Label: `delete: ${imports[pkg].Name} ( ${pkg} )`}));
+    items = items.concat(parts[1].map(pkg=>({Path: pkg, Label: `${pkg}`})));
     this.setItems(items);
     this.focusFilterEditor();
   }
-  show() {
+  async show(): Promise {
     this.visible = true;
-    this.updateItems();
+    await this.updateItems();
+    if (!this.visible) return;
     this.modalPanel.show();
     this.focusFilterEditor();
   }
@@ -63,7 +56,9 @@ export default class GoQuickImportView extends SelectListView {
     return "Label";
   }
   viewForItem(item: Object): string {
-    return `<li>${item.Label}</li>`
+    return item.Remove
+      ? `<li class="go-quick-import remove">${item.Label}</li>`
+      : `<li class="go-quick-import">${item.Label}</li>`;
   }
   cancelled() {
     this.hide();

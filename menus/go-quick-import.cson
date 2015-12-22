@@ -9,10 +9,6 @@
           'label': 'Show'
           'command': 'go-quick-import:trigger'
         }
-        {
-          'label': 'Refresh'
-          'command': 'go-quick-import:refresh'
-        }
       ]
     ]
   }

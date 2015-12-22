@@ -20,7 +20,6 @@ export default {
     this.goQuickImportView = new GoQuickImportView();
     this.subscriptions = new CompositeDisposable();
     this.subscriptions.add(atom.commands.add("atom-text-editor[data-grammar='source go']", {"go-quick-import:trigger": ()=>this.trigger()}));
-    this.subscriptions.add(atom.commands.add("atom-workspace", {"go-quick-import:refresh": ()=>this.goQuickImportView.refresh()}));
   },
   deactivate() {
     this.subscriptions.dispose();
