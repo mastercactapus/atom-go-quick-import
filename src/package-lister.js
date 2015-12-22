@@ -26,8 +26,8 @@ function parseEnv(data: string): {[key:string]: string} {
 async function pkgDirs(): Promise<Array<string>> {
   var env = parseEnv(await run("go env"));
   return [
-    path.resolve(env.GOROOT, "pkg", env.GOOS + "_" + env.GOARCH),
-    path.resolve(env.GOPATH, "pkg", env.GOOS + "_" + env.GOARCH),
+    path.resolve(atom.config.get("go-quick-import.GOROOT")||env.GOROOT, "pkg", env.GOOS + "_" + env.GOARCH),
+    path.resolve(atom.config.get("go-quick-import.GOPATH")||env.GOPATH, "pkg", env.GOOS + "_" + env.GOARCH),
   ]
 }
 

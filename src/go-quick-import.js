@@ -6,6 +6,16 @@ import {CompositeDisposable} from "atom";
 
 export default {
   config: {
+    GOROOT: {
+      title: "GOROOT",
+      default: process.env.GOROOT,
+      type: "string"
+    },
+    GOPATH: {
+      title: "GOPATH",
+      default: process.env.GOPATH,
+      type: "string"
+    },
     importNames: {
       title: "Import Names",
       description: "Override import name for packages (comma-separated)",
