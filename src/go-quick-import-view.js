@@ -2,7 +2,7 @@
 import "babel-polyfill";
 import { SelectListView } from "atom-space-pen-views";
 import listPackages from "./package-lister";
-import { AddImport, RemoveImport, ListImports, Header } from "./modimport";
+import { AddImport, RemoveImport, ListImports } from "./modimport";
 import { partition, indexBy } from "lodash";
 
 function pathAliases(): Object {
@@ -66,16 +66,20 @@ export default class GoQuickImportView extends SelectListView {
   }
   confirmed(item: Object) {
     var editor = atom.workspace.getActiveTextEditor();
-    var oldText: string = editor.getText();
-    var oldHeader: string = Header(editor.getText())[0];
-    var newHeader: string;
+    var origSource: string = editor.getText();
+    var res;
     if (item.Remove) {
-      newHeader = RemoveImport(oldHeader, item.Path);
+      res = RemoveImport(origSource, item.Path);
     } else {
-      newHeader = AddImport(oldHeader, item.Path, pathAliases()[item.Path] || "");
+      res = AddImport(origSource, item.Path, pathAliases()[item.Path] || "");
     }
-    var oldLines = oldHeader.split("\n").length;
-    editor.setTextInBufferRange([[0,0], [oldLines-1, 0]], newHeader);
+    var newHeader = res[0];
+    var headerLen = res[1];
+
+    var oldHeader = origSource.slice(0, headerLen)
+    var rows = oldHeader.split("\n").length-1;
+
+    editor.setTextInBufferRange([[0,0], [rows, 0]], newHeader);
     var editorEl = atom.views.getView(editor);
     this.hide();
     editorEl.focus();

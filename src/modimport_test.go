@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"go/parser"
 	"go/token"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const srcPkgOnly = `package main`
@@ -40,21 +41,36 @@ func getImports(t *testing.T, source string) {
 	fmt.Println(f)
 }
 
-func TestHeader(t *testing.T) {
-	exHead := `package main
+const withComments = `/* something */
+package main
 
-`
-	exBody := `func main() {
-
+/* other
+comment */
+func main() {
+	fmt.Println("")
 }`
-	head, body := header(srcNoImport)
-	assert.Equal(t, exHead, head, "header")
-	assert.Equal(t, exBody, body, "body")
+
+func TestAddImport_Comments(t *testing.T) {
+	result, size := AddImport(withComments, "fmt", "")
+
+	result = result + withComments[size:]
+
+	assert.Equal(t,
+		`/* something */
+package main
+
+import "fmt"
+
+/* other
+comment */
+func main() {
+	fmt.Println("")
+}`, result)
 }
 
 func TestAddImport(t *testing.T) {
 	test := func(source, path, alias string, expected []Import, msg string) {
-		result := AddImport(source, path, alias)
+		result, _ := AddImport(source, path, alias)
 		t.Log(msg, "result:", result)
 		imports := ListImports(result)
 		assert.EqualValues(t, expected, imports, msg)
@@ -66,7 +82,7 @@ func TestAddImport(t *testing.T) {
 	test(srcNoGroup, "net", "", []Import{{"", "fmt"}, {"", "net"}}, "srcNoGroup")
 	test(srcGroup, "net", "", []Import{{"", "fmt"}, {"", "net"}}, "srcGroup")
 
-	result := AddImport(`package main
+	result, _ := AddImport(`package main
 
 import (
 	"fmt"
