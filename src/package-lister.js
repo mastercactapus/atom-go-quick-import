@@ -27,25 +27,32 @@ async function pkgDirs(): Promise<Array<string>> {
   var env = parseEnv(await run("go env"));
   return [
     path.resolve(atom.config.get("go-quick-import.GOROOT")||env.GOROOT, "pkg", env.GOOS + "_" + env.GOARCH),
-    path.resolve(atom.config.get("go-quick-import.GOPATH")||env.GOPATH, "pkg", env.GOOS + "_" + env.GOARCH),
+    ...(atom.config.get("go-quick-import.GOPATH")||env.GOPATH).split(path.delimiter).map(p=>
+      path.resolve(p, "pkg", env.GOOS + "_" + env.GOARCH)
+    ),
   ]
+}
+
+async function aGlob(p: string): Array<string> {
+  return new Promise((resolve, reject)=>glob(p, (err,res)=>err&&reject(err)||resolve(res)));
+}
+
+function validPackage(p: string): boolean {
+  if (p.includes(path.sep+"_") || p.startsWith("_")) return false;
+  
+  return !["vendor", "internal"].some(key=>
+    p.includes(path.sep+key+path.sep) || p.startsWith(key+path.sep) || p.endsWith(p.sep+key)
+  )
 }
 
 export default async function listPkgs(): Promise<Array<string>> {
   var pkgs = [];
   var dirs = await pkgDirs();
-  var wait: Array<Promise<Array<string>>> = dirs.map(dir=>{
-    return new Promise((resolve,reject)=>{
-      glob(path.join(dir, "**/*.a"), (err, paths: Array<string>)=>{
-        if (err) return reject(err);
-        resolve(paths.map(p=>{
-          return path.relative(dir, p.replace(/\.a$/, ""));
-        }));
-      });
-    })
-  });
-  for (var i=0;i<wait.length;i++){
-    pkgs = pkgs.concat(await wait[i]);
-  }
-  return pkgs;
+  var pkgs = (await Promise.all(
+    dirs.map(d=>
+      aGlob(path.join(d, "**/*.a")).then(paths=>paths.map(p=>path.relative(d, p.replace(/\.a$/, ""))))
+    )
+  )).reduce((acc,p)=>acc.concat(p), []);
+
+  return pkgs.filter(validPackage);
 }

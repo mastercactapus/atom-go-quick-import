@@ -3,7 +3,6 @@ import "babel-polyfill";
 import { SelectListView } from "atom-space-pen-views";
 import listPackages from "./package-lister";
 import { AddImport, RemoveImport, ListImports } from "./modimport";
-import { partition, indexBy } from "lodash";
 
 function pathAliases(): Object {
   var vals: Array<string> = atom.config.get("go-quick-import.importNames")
@@ -33,11 +32,13 @@ export default class GoQuickImportView extends SelectListView {
   async updateItems(): Promise {
     if (!this.visible) return;
     var doList = listPackages();
-    var imports = ListImports(atom.workspace.getActiveTextEditor().getText());
-    imports = indexBy(imports, "Path");
-    var parts = partition(await doList, pkg=>imports[pkg]);
-    var items = parts[0].map(pkg=>({Remove: true, Path: pkg, Label: `delete: ${imports[pkg].Name} ( ${pkg} )`}));
-    items = items.concat(parts[1].map(pkg=>({Path: pkg, Label: `${pkg}`})));
+    var importList = ListImports(atom.workspace.getActiveTextEditor().getText());
+    var imports = importList.reduce((res,item)=>{ res[item.Path] = item; return res }, {});
+    var existing = [];
+    var available = [];
+    (await doList).forEach(item=>{ if (imports[item]) existing.push(item); else available.push(item) })
+    var items = existing.map(pkg=>({Remove: true, Path: pkg, Label: `delete: ${imports[pkg].Name} ( ${pkg} )`}));
+    items = items.concat(available.map(pkg=>({Path: pkg, Label: `${pkg}`})));
     this.setItems(items);
     this.focusFilterEditor();
   }
